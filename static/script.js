@@ -7,6 +7,7 @@ const statusEl = document.getElementById("status");
 const resultEl = document.getElementById("result");
 const player = document.getElementById("player");
 const downloadLink = document.getElementById("download-link");
+const fileInputs = document.querySelectorAll('input[type="file"]');
 
 tabButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -18,6 +19,12 @@ tabButtons.forEach((btn) => {
 
     panels.forEach((p) => {
       p.classList.toggle("hidden", p.dataset.panel !== mode);
+    });
+
+    // Only the file input in the active panel should be submitted with the
+    // form; disabled inputs are excluded from FormData automatically.
+    fileInputs.forEach((input) => {
+      input.disabled = input.closest(".panel").dataset.panel !== mode;
     });
   });
 });

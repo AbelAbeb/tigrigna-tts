@@ -9,7 +9,6 @@ browser gets back a playable/downloadable WAV file.
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
-from werkzeug.utils import secure_filename
 
 from tts_engine import EmptyTextError, read_pdf, synthesize_to_file
 
@@ -45,8 +44,7 @@ def synthesize():
             if upload is None or upload.filename == "":
                 return jsonify(error="Please choose a .txt or .pdf file."), 400
 
-            filename = secure_filename(upload.filename)
-            ext = _extension_of(filename)
+            ext = _extension_of(upload.filename)
             if ext not in ALLOWED_EXTENSIONS:
                 return jsonify(error="Only .txt and .pdf files are supported."), 400
 
