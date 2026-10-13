@@ -111,13 +111,13 @@ playBtn.addEventListener("click", () => {
 });
 
 audioEl.addEventListener("play", () => {
-  iconPlay.hidden = true;
-  iconPause.hidden = false;
+  iconPlay.style.display = "none";
+  iconPause.style.display = "block";
 });
 
 audioEl.addEventListener("pause", () => {
-  iconPlay.hidden = false;
-  iconPause.hidden = true;
+  iconPlay.style.display = "block";
+  iconPause.style.display = "none";
 });
 
 audioEl.addEventListener("loadedmetadata", () => {
@@ -131,8 +131,8 @@ audioEl.addEventListener("timeupdate", () => {
 });
 
 audioEl.addEventListener("ended", () => {
-  iconPlay.hidden = false;
-  iconPause.hidden = true;
+  iconPlay.style.display = "block";
+  iconPause.style.display = "none";
 });
 
 seekBar.addEventListener("click", (e) => {
