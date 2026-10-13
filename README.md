@@ -44,11 +44,78 @@ Then open http://localhost:5000 in a browser.
 - `outputs/` — generated WAV files (not committed to git; grows over time,
   safe to clear).
 
+## Deploying (Render free tier)
+
+The Android app (see `android/`) needs the backend reachable over the
+internet, so it can't just point at your laptop. [Render](https://render.com)
+has a free web-service tier that works for this:
+
+1. Push this repo to GitHub (already done) and sign up at render.com with
+   that GitHub account.
+2. In the Render dashboard: **New → Blueprint**, pick this repo. Render
+   reads `render.yaml` and sets everything up (build command, start command,
+   Python version) automatically.
+3. First deploy takes a few minutes (installing torch + downloading the
+   model). Once live, Render gives you a URL like
+   `https://tigrigna-tts.onrender.com` — that's what the Android app points at.
+
+Notes on the free tier:
+- `requirements-render.txt` installs a CPU-only build of torch (the default
+  PyPI wheel is much larger and not needed here) to keep the build small.
+- Free instances spin down after inactivity, so the first request after a
+  quiet period will be slow (cold start) while it spins back up and reloads
+  the model.
+- Free instances have limited RAM (512 MB). This model is small enough to
+  usually fit, but if you see out-of-memory errors, Render's next paid tier
+  up resolves it.
+
+## Android app
+
+`android/` is a small WebView-based Android app (Kotlin, Gradle) that wraps
+this same web UI — it supports file uploads (for the .txt/.pdf tabs),
+downloads the generated WAV via Android's DownloadManager, and opens
+external links (like the model card) in the system browser instead of
+inside the app.
+
+It points at `BuildConfig.BASE_URL`, set in `android/app/build.gradle.kts`:
+the debug build defaults to a local dev server IP for testing on your
+network, and the release build defaults to the Render URL — update both
+once you know your actual addresses.
+
+To build it:
+
+```bash
+cd android
+./gradlew assembleDebug     # debug build, unsigned
+./gradlew bundleRelease     # release .aab, for Play Store upload (needs signing, see below)
+```
+
+Or just open the `android/` folder in Android Studio.
+
+### Publishing to Google Play
+
+This repo can't do this part for you — it needs your own accounts and a
+one-time fee:
+
+1. Create a [Google Play Console](https://play.google.com/console) account
+   (one-time $25 fee).
+2. Generate a signing key (`keytool -genkey -v -keystore release-key.jks
+   -keyalg RSA -keysize 2048 -validity 10000 -alias tigrigna-tts`) and wire
+   it into `android/app/build.gradle.kts` under `signingConfigs` — **never
+   commit the `.jks` file or its passwords to git.**
+3. Build the signed bundle: `./gradlew bundleRelease`.
+4. In Play Console: create an app, fill in the store listing (description,
+   screenshots, icon, privacy policy URL, content rating questionnaire),
+   upload the `.aab` from `app/build/outputs/bundle/release/`, and submit
+   for review.
+
 ## Notes
 
-- The model is licensed CC-BY-NC-4.0 — **non-commercial use only**.
+- The model is licensed CC-BY-NC-4.0 — **non-commercial use only**. Keep
+  the deployed app and any Android/Play Store listing free and ad-free to
+  stay within that license.
 - Uploads are capped at 10 MB; only `.txt` and `.pdf` are accepted.
 - This is a simple single-process app intended for local or small-scale use.
-  For public deployment, put it behind a production WSGI server (e.g.
-  gunicorn/waitress) and add rate limiting, since synthesis is CPU/GPU
-  intensive.
+  For public deployment, put it behind a production WSGI server (handled by
+  `render.yaml` via gunicorn) and consider rate limiting, since synthesis is
+  CPU/GPU intensive.

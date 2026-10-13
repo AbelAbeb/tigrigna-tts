@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug-only override: allows plain http:// so the debug build can reach
+     a local dev server (see BASE_URL in app/build.gradle.kts). The release
+     build does not merge this file, so the Play Store build stays https-only. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>

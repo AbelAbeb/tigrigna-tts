@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Tigrigna TTS</string>
+    <string name="connection_error_title">Can\'t reach the server</string>
+    <string name="connection_error_body">Check your internet connection and try again.</string>
+    <string name="retry">Retry</string>
+    <string name="download_started">Downloading…</string>
+</resources>

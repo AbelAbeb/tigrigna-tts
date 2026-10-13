@@ -1,0 +1,13 @@
+# Deployment requirements for Render (CPU-only torch to keep the build small
+# and fit the free-tier instance). Local development should keep using
+# requirements.txt instead, so a GPU build of torch isn't disturbed.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+flask>=3.0
+gunicorn>=21.2
+torch>=2.1
+transformers>=4.40
+scipy>=1.11
+numpy>=1.26
+pypdf>=4.0
+uroman>=1.2
