@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tigrigna Text-to-Speech</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="card">
+    <h1>Tigrigna Text‑to‑Speech</h1>
+    <p class="subtitle">Type Tigrigna text, or upload a .txt / .pdf file, and generate speech you can play or download.</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-mode="text">Text</button>
+      <button class="tab-btn" data-mode="txt">.txt file</button>
+      <button class="tab-btn" data-mode="pdf">.pdf file</button>
+    </div>
+
+    <form id="tts-form">
+      <input type="hidden" name="mode" id="mode-field" value="text">
+
+      <div class="panel" data-panel="text">
+        <textarea name="text" rows="6" placeholder="ሰላም ዓለም..."></textarea>
+      </div>
+
+      <div class="panel hidden" data-panel="txt">
+        <input type="file" name="file" accept=".txt">
+      </div>
+
+      <div class="panel hidden" data-panel="pdf">
+        <input type="file" name="file" accept=".pdf">
+      </div>
+
+      <button type="submit" id="submit-btn">Generate speech</button>
+    </form>
+
+    <div id="status" class="status hidden"></div>
+
+    <div id="result" class="result hidden">
+      <audio id="player" controls></audio>
+      <a id="download-link" download="tigrigna-speech.wav">Download WAV</a>
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
