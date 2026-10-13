@@ -48,12 +48,6 @@ def _load_model():
         # copies of the model in memory at once.
         model = VitsModel.from_pretrained(MODEL_ID, low_cpu_mem_usage=True).to(device).eval()
 
-        if device == "cpu":
-            # Dynamic int8 quantization of the Linear layers shrinks their
-            # memory footprint and speeds up CPU inference, at a negligible
-            # quality cost for a VITS vocoder.
-            model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
-
         needs_uroman = getattr(tokenizer, "is_uroman", False)
         uroman = None
         if needs_uroman:
