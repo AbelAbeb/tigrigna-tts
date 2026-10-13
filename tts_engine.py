@@ -6,6 +6,7 @@ a reusable module for the web app.
 Model license: CC-BY-NC-4.0 (non-commercial use only).
 """
 
+import gc
 import re
 import threading
 import uuid
@@ -17,6 +18,11 @@ from transformers import AutoTokenizer, VitsModel, set_seed
 
 MODEL_ID = "facebook/mms-tts-tir"
 MAX_CHARS = 20000  # guard against runaway input on the web endpoint
+
+# Multi-threaded BLAS kernels allocate their own per-thread scratch buffers;
+# on a memory-capped instance (e.g. Render's free 512MB tier) that overhead
+# matters more than the throughput it buys.
+torch.set_num_threads(1)
 
 _model_lock = threading.Lock()
 _tokenizer = None
@@ -37,7 +43,16 @@ def _load_model():
             return
         device = "cuda" if torch.cuda.is_available() else "cpu"
         tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-        model = VitsModel.from_pretrained(MODEL_ID).to(device).eval()
+        # low_cpu_mem_usage avoids the default "allocate random weights, then
+        # overwrite with loaded weights" pattern, which briefly holds two
+        # copies of the model in memory at once.
+        model = VitsModel.from_pretrained(MODEL_ID, low_cpu_mem_usage=True).to(device).eval()
+
+        if device == "cpu":
+            # Dynamic int8 quantization of the Linear layers shrinks their
+            # memory footprint and speeds up CPU inference, at a negligible
+            # quality cost for a VITS vocoder.
+            model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
 
         needs_uroman = getattr(tokenizer, "is_uroman", False)
         uroman = None
@@ -48,6 +63,8 @@ def _load_model():
 
         _tokenizer, _model, _device = tokenizer, model, device
         _needs_uroman, _uroman = needs_uroman, uroman
+
+        gc.collect()
 
 
 def read_pdf(file_obj):

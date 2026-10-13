@@ -105,13 +105,16 @@ class MainActivity : AppCompatActivity() {
                 filePathCallback?.onReceiveValue(null)
                 filePathCallback = callback
 
+                // Deliberately not filtering by params.acceptTypes: the WebView
+                // passes the <input accept> value through more or less verbatim
+                // (e.g. ".txt"/".pdf"), which isn't a real MIME type, so handing
+                // it to EXTRA_MIME_TYPES makes the system picker filter out every
+                // file and show an empty list. Show everything instead; the
+                // server already validates the extension and reports a clear
+                // error if the wrong file type is picked.
                 val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = "*/*"
-                    val mimeTypes = params.acceptTypes.filter { it.isNotBlank() && it != "*/*" }
-                    if (mimeTypes.isNotEmpty()) {
-                        putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes.toTypedArray())
-                    }
                 }
                 fileChooserLauncher.launch(Intent.createChooser(intent, null))
                 return true
