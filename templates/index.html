@@ -4,43 +4,110 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tigrigna Text-to-Speech</title>
+  <meta name="description" content="Convert Tigrigna text, .txt, or .pdf files into natural speech you can play or download.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <main class="card">
-    <h1>Tigrigna Text‑to‑Speech</h1>
-    <p class="subtitle">Type Tigrigna text, or upload a .txt / .pdf file, and generate speech you can play or download.</p>
+  <div class="bg-glow"></div>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-mode="text">Text</button>
-      <button class="tab-btn" data-mode="txt">.txt file</button>
-      <button class="tab-btn" data-mode="pdf">.pdf file</button>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">ት</span>
+      <span class="brand-name">Tigrigna&nbsp;TTS</span>
     </div>
+    <a class="brand-link" href="https://huggingface.co/facebook/mms-tts-tir" target="_blank" rel="noopener">
+      Powered by MMS
+    </a>
+  </header>
 
-    <form id="tts-form">
-      <input type="hidden" name="mode" id="mode-field" value="text">
+  <main class="shell">
+    <section class="intro">
+      <h1>Turn Tigrigna text into natural speech</h1>
+      <p>Paste text, or upload a <strong>.txt</strong> / <strong>.pdf</strong> file — get a voice recording you can play instantly or download as a WAV file.</p>
+    </section>
 
-      <div class="panel" data-panel="text">
-        <textarea name="text" rows="6" placeholder="ሰላም ዓለም..."></textarea>
+    <section class="card" aria-label="Text-to-speech generator">
+      <div class="tabs" role="tablist" aria-label="Input method">
+        <button type="button" class="tab-btn active" data-mode="text" role="tab" aria-selected="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+          Text
+        </button>
+        <button type="button" class="tab-btn" data-mode="txt" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          .txt file
+        </button>
+        <button type="button" class="tab-btn" data-mode="pdf" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          .pdf file
+        </button>
       </div>
 
-      <div class="panel hidden" data-panel="txt">
-        <input type="file" name="file" id="file-input-txt" accept=".txt" disabled>
+      <form id="tts-form">
+        <input type="hidden" name="mode" id="mode-field" value="text">
+
+        <div class="panel" data-panel="text">
+          <textarea name="text" id="text-input" rows="7" maxlength="20000" placeholder="ሰላም ዓለም... ጽሑፍካ ኣብዚ ጻፍ።"></textarea>
+          <div class="char-count"><span id="char-count">0</span> / 20,000 characters</div>
+        </div>
+
+        <div class="panel hidden" data-panel="txt">
+          <label class="dropzone" for="file-input-txt" data-dropzone>
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            <span class="dropzone-title">Click to choose, or drag a .txt file here</span>
+            <span class="dropzone-file" data-filename-for="file-input-txt">No file selected</span>
+          </label>
+          <input type="file" name="file" id="file-input-txt" accept=".txt" disabled hidden>
+        </div>
+
+        <div class="panel hidden" data-panel="pdf">
+          <label class="dropzone" for="file-input-pdf" data-dropzone>
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            <span class="dropzone-title">Click to choose, or drag a .pdf file here</span>
+            <span class="dropzone-file" data-filename-for="file-input-pdf">No file selected</span>
+          </label>
+          <input type="file" name="file" id="file-input-pdf" accept=".pdf" disabled hidden>
+        </div>
+
+        <button type="submit" id="submit-btn">
+          <span class="btn-label">Generate speech</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <div id="status" class="status hidden" role="status"></div>
+
+      <div id="result" class="result hidden">
+        <div class="player">
+          <button type="button" id="play-btn" class="play-btn" aria-label="Play">
+            <svg class="icon-play" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+          </button>
+
+          <div class="player-body">
+            <div class="seek-bar" id="seek-bar">
+              <div class="seek-fill" id="seek-fill"></div>
+            </div>
+            <div class="time-row">
+              <span id="time-current">0:00</span>
+              <span id="time-total">0:00</span>
+            </div>
+          </div>
+
+          <a id="download-link" class="icon-btn" download="tigrigna-speech.wav" aria-label="Download WAV">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          </a>
+        </div>
+        <audio id="audio-el" preload="metadata"></audio>
       </div>
+    </section>
 
-      <div class="panel hidden" data-panel="pdf">
-        <input type="file" name="file" id="file-input-pdf" accept=".pdf" disabled>
-      </div>
-
-      <button type="submit" id="submit-btn">Generate speech</button>
-    </form>
-
-    <div id="status" class="status hidden"></div>
-
-    <div id="result" class="result hidden">
-      <audio id="player" controls></audio>
-      <a id="download-link" download="tigrigna-speech.wav">Download WAV</a>
-    </div>
+    <p class="disclaimer">
+      Voice model: <a href="https://huggingface.co/facebook/mms-tts-tir" target="_blank" rel="noopener">facebook/mms-tts-tir</a>
+      (Meta MMS) — licensed CC‑BY‑NC‑4.0, non‑commercial use only.
+    </p>
   </main>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
