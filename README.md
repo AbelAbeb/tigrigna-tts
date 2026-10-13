@@ -77,43 +77,21 @@ downloads the generated WAV via Android's DownloadManager, and opens
 external links (like the model card) in the system browser instead of
 inside the app.
 
-It points at `BuildConfig.BASE_URL`, set in `android/app/build.gradle.kts`:
-the debug build defaults to a local dev server IP for testing on your
-network, and the release build defaults to the Render URL — update both
-once you know your actual addresses.
+It points at `BuildConfig.BASE_URL`, set in `android/app/build.gradle.kts`.
+Update the debug and release values to match your own setup.
 
 To build it:
 
 ```bash
 cd android
-./gradlew assembleDebug     # debug build, unsigned
-./gradlew bundleRelease     # release .aab, for Play Store upload (needs signing, see below)
+./gradlew assembleDebug
 ```
 
 Or just open the `android/` folder in Android Studio.
 
-### Publishing to Google Play
-
-This repo can't do this part for you — it needs your own accounts and a
-one-time fee:
-
-1. Create a [Google Play Console](https://play.google.com/console) account
-   (one-time $25 fee).
-2. Generate a signing key (`keytool -genkey -v -keystore release-key.jks
-   -keyalg RSA -keysize 2048 -validity 10000 -alias tigrigna-tts`) and wire
-   it into `android/app/build.gradle.kts` under `signingConfigs` — **never
-   commit the `.jks` file or its passwords to git.**
-3. Build the signed bundle: `./gradlew bundleRelease`.
-4. In Play Console: create an app, fill in the store listing (description,
-   screenshots, icon, privacy policy URL, content rating questionnaire),
-   upload the `.aab` from `app/build/outputs/bundle/release/`, and submit
-   for review.
-
 ## Notes
 
-- The model is licensed CC-BY-NC-4.0 — **non-commercial use only**. Keep
-  the deployed app and any Android/Play Store listing free and ad-free to
-  stay within that license.
+- The model is licensed CC-BY-NC-4.0 — **non-commercial use only**.
 - Uploads are capped at 10 MB; only `.txt` and `.pdf` are accepted.
 - This is a simple single-process app intended for local or small-scale use.
   For public deployment, put it behind a production WSGI server (handled by

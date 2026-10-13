@@ -21,9 +21,11 @@ android {
 
     buildTypes {
         debug {
-            // Point the debug build at a local dev server reachable from a
-            // device/emulator on the same network while testing.
-            buildConfigField("String", "BASE_URL", "\"http://10.8.100.93:5000\"")
+            // Points at the phone's own localhost. Pair with
+            // `adb reverse tcp:5000 tcp:5000` so a USB-connected device's
+            // localhost:5000 tunnels back to the dev machine's Flask server
+            // - works regardless of WiFi/LAN/firewall setup.
+            buildConfigField("String", "BASE_URL", "\"http://127.0.0.1:5000\"")
         }
         release {
             isMinifyEnabled = false
